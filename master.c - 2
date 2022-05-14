@@ -1,0 +1,108 @@
+/*
+ *Jared Migneco
+ *Project 7
+ *05/13/22
+ *
+ *
+ *
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+//initialization of global variables
+//to be perfectly honest was recommended to do this, so I'm doing it
+pid_t *slaves;
+key_t shmkey;
+int maxSlaves;
+
+
+
+
+
+
+
+int main (int argc, int* argv[])
+{
+        //command line counter variable
+        int commmandNConquer, i, n, secs;
+
+        char *seconds = argv[2];
+        char *children = argv[3];
+
+        secs = atoi(seconds);
+        maxSlaves = atoi(children);
+
+        char *logfile = NULL;
+
+
+        //creating shared memory address
+        shmkey = ftok("./master", 117117);
+        int shmid = shmget (0x080698, sizeof(int), 0666 | IPC_CREAT);
+        int* shm = (int*)shmat(shmid, NULL, 0);
+
+        //checking that three parameters are passed
+        if (argc != 3)
+        {
+                printf("Master: ERROR: please pass three arguments");
+                exit(EXIT_FAILURE);
+        }
+        else if (maxSlaves > 20)
+        {
+                maxSlaves = 20;
+                printf("Master: passed n value should be max of 20, set to 20 instead");
+
+        }
+
+        pid_t kid;
+
+        for(i = 0; i < maxSlaves; i++)
+        {
+                //forking here
+                kid = fork();
+
+                //I think the joke is funny for an error message and refuse to take it out
+                //error message if master does not fork
+                if(kid < 0)
+                {
+                        perror("ERROR: you might have spooned instead of forking\n");
+                        exit(EXIT_FAILURE);
+                }
+                //slave is executed so long as master successfully forked
+                else if(processID == 0)
+                {
+                        slaves[i] = kid;
+                        execl("./slave", maxSlaves, logfile);
+                }
+        }
+
+        //master waiting on child processes to finish
+        for(i = 0; i < maxSlaves; i++)
+        {
+                wait(1);
+        }
+
+
+
+        //resetting shared memory
+        free(slaves);
+        *shm = 0;
+        printf("Master: shared memory has been reset\n");
+        wait(NULL);
+
+        //killing and signalling exit with a success message
+        shmctl(shmid, IPC_RMID, NULL);
+        printf("Master has been slain\n");
+
+        return(EXIT_SUCCESS);
+}
+                 
