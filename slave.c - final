@@ -1,0 +1,90 @@
+/*
+ *Jared Migneco
+ *Project 7
+ *05/13/22
+ *
+ *Slave Class
+Bakery Algorithm attempt attampts to use example from stackoverflow for basis
+https://stackoverflow.com/questions/42295035/implementation-of-bakery-algorithm-in-c-for-forked-processes
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+//global variable
+key_t shmkey;
+int childpid
+
+int main (int argc, char * argv[])
+{
+
+        //matching the shared mem ID to be the same as in the master class
+        shmkey = ftok("./master", 117117;)
+        shmid = shmget(shmkey, sizeof(int), 0666 | IPC_CREAT);
+        int *shm = (int*)shmat(shmid, NULL, 0);
+        //initializing value that will be used for turns in baker algorithm
+        int ticket = 0
+        char *logfile = NULL;
+
+        //checks if shared memory is set to 0
+        if (*shm == 0)
+        {
+                printf("Slave: shared memory is set to 0");
+        }
+        else
+        {
+                //worker class has an error and exits if shared memory is not 0
+                printf("Slave: ERROR: shared memory not set to 0");
+                exit(EXIT_FAILURE);
+        }
+
+        //logfile
+        if(!logfile)
+        {
+                logfile = "testfile.out";
+        }
+
+        //code for handling critical section, uses semaphore to handle CR
+        for (i = 0; i <5; i++)
+        {
+                //entering cr
+                if(ticket == 0)
+                {
+                        ticket += 1;
+                }
+                else
+                {
+                        break;
+                }
+
+                //sleeping for random amount of time
+                sleep(rand() % 5);
+
+                //executing cr
+                //writing to logfile
+                printf("File modified by process number %i", childpid);
+                //printing current system time
+                printf("Slave: task completed at: %s", "$(date = '%r')");
+                sleep(rand() % 5);
+
+                //skedaddling out of cr
+                ticket = 0;
+        }
+        //waits for shared memory to reach 0
+        while(*shm != 0)
+        {
+                sleep(1);
+        }
+        printf("Slave: Shared memory reset to 0");
+        return(EXIT_FAILURE);
+
+}
